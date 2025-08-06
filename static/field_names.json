@@ -1,0 +1,37 @@
+{
+  "field_names": {
+    "DAC": "First Name:",
+    "DAD": "Middle Name:",
+    "DAJ": "State:",
+    "DAI": "City:",
+    "DAG": "Street:",
+    "DAK": "ZIP:",
+    "DAQ": "DL Number:",
+    "DAU": "Height (ft):",
+    "DAW": "Weight (lbs):",
+    "DAY": "Eyes:",
+    "DAZ": "Hair:",
+
+    "DBA": "Exp:",
+    "DBB": "DOB:",
+    "DBC": "Sex",
+    "DBD": "Iss:",
+
+    "DCA": "Class:",
+    "DCB": "Restrictions:",
+    "DCD": "Endorsement:",
+    "DCF": "DD:",
+    "DCK": "Inv Number:",
+    "DCU": "Suffix",
+    "DCS": "Last Name:",
+    "DCL": "Race code:",
+
+    "DDA": "Complience type:",
+    "DDB": "Revision:",
+    "DDK": "Veteran",
+    "DDL": "Donor",
+
+    "QQQ": "Doc type:",
+    "ZGD": "District:"
+  }
+}

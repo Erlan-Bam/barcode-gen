@@ -1,0 +1,70 @@
+{
+  "config": {
+    "hairsFull": {
+      "Bald": "BALD",
+      "Red/Auburn": "RED",
+      "Black": "BLACK",
+      "Sandy": "SANDY",
+      "Blond": "BLOND",
+      "White": "WHITE",
+      "Brown": "BROWN",
+      "Gray": "GRAY",
+      "Unknown": "UNKNOWN"
+    },
+    "hairs": {
+      "Bald": "BAL",
+      "Red/Auburn": "RED",
+      "Black": "BLK",
+      "Sandy": "SDY",
+      "Blond": "BLN",
+      "White": "WHI",
+      "Brown": "BRO",
+      "Gray": "GRY",
+      "Unknown": "UNK"
+    },
+    "eyes": {
+      "Black": "BLK",
+      "Blue": "BLU",
+      "Brown": "BRO",
+      "Dichromatic": "DIC",
+      "Gray": "GRY",
+      "Green": "GRN",
+      "Hazel": "HAZ",
+      "Maroon": "MAR",
+      "Pink": "PNK",
+      "Unknown": "UNK"
+    },
+    "race": {
+      "Alaskan or American Indian": "AI",
+      "Asian or Pacific Islander": "AP",
+      "Black": "BK",
+      "Hispanic Origin": "H",
+      "Non - hispanic": "O",
+      "White": "W",
+      "Unknown": "U"
+    },
+    "stateEyes": {
+      "BLK": "BLK",
+      "BLU": "BLU",
+      "BRO": "BRN",
+      "DIC": "DIC",
+      "GRY": "GRY",
+      "GRN": "GRN",
+      "HAZ": "HAZ",
+      "MAR": "MAR",
+      "PNK": "PNK",
+      "UNK": "UNK"
+    },
+    "stateHair": {
+      "BAL": "BAL",
+      "RED": "RED",
+      "BLK": "BLK",
+      "SDY": "SDY",
+      "BLN": "BLN",
+      "WHI": "WHI",
+      "BRO": "BRN",
+      "GRY": "GRY",
+      "UNK": "UNK"
+    }
+  }
+}

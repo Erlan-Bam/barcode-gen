@@ -1,0 +1,4 @@
+node_modules
+dist
+nest-cli.json
+.env
