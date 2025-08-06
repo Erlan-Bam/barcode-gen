@@ -181,7 +181,7 @@ export const soundex_MD_MI_MN = (
     if (target.length > firstName.length) {
       continue;
     }
-    if (firstName.substr(0, target.length) == target) {
+    if (firstName.substring(0, target.length) == target) {
       firstCode = String(firstMiddleName_MD_MI_MN[i][1]);
       fullyCoded = firstName == target;
       if (!fullyCoded) {
@@ -198,7 +198,7 @@ export const soundex_MD_MI_MN = (
       if (target.length > middleName.length) {
         continue;
       }
-      if (middleName.substr(0, target.length) == target) {
+      if (middleName.substring(0, target.length) == target) {
         middleCode = String(firstMiddleName_MD_MI_MN[i][1]);
         break;
       }
