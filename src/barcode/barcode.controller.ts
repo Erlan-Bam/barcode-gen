@@ -13,11 +13,15 @@ import {
   DLDownFields,
 } from 'src/barcode-config/dto/configs.dto';
 import { GetDataDto } from './dto/get-data.dto';
+import { BarcodeConfigService } from 'src/barcode-config/barcode-config.service';
 
 @ApiTags('barcodes')
 @Controller('barcodes')
 export class BarcodeController {
-  constructor(private readonly barcodeService: BarcodeService) {}
+  constructor(
+    private barcodeService: BarcodeService,
+    private configService: BarcodeConfigService,
+  ) {}
 
   @Post()
   @ApiOperation({
@@ -32,6 +36,6 @@ export class BarcodeController {
   async getFields(
     @Body() data: GetDataDto,
   ): Promise<DLConfigFieldsToPresent | DLDownFields> {
-    return this.barcodeService.getFields(data);
+    return this.configService.getFields(data);
   }
 }
