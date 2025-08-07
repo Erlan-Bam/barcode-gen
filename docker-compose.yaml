@@ -23,6 +23,19 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    healthcheck:
+      # Good enough: wait until port 9092 is accepting connections
+      test:
+        [
+          'CMD',
+          'bash',
+          '-lc',
+          'exec 3<>/dev/tcp/127.0.0.1/9092 && echo -e > /dev/null 2>&1',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 20s
 
   backend:
     build:
@@ -30,8 +43,10 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     depends_on:
-      - redis
-      - kafka
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - '3000:3000'
     env_file:
