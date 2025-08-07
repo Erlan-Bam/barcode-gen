@@ -34,11 +34,8 @@ services:
       - kafka
     ports:
       - '3000:3000'
-    environment:
-      REDIS_URL: 'redis://redis:6379'
-      KAFKA_BROKERS: 'kafka:9092'
-      KAFKA_CLIENT_ID: 'barcodegen'
-      KAFKA_ENABLED: 'true'
+    env_file:
+      - .env
 
 volumes:
   redis_data:
