@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   BarcodeConfigs,
+  BarcodeConfigsFields,
   BarcodeGenerateConfig,
   DocumentType,
 } from './dto/configs.dto';
@@ -5405,4 +5406,35 @@ export class BarcodeConfigService {
       },
     },
   ];
+
+  async findOptionsByCountry(country: string): Promise<BarcodeConfigs[]> {
+    return this.configs.filter((e) => e.country == country);
+  }
+
+  async getFields(
+    options: BarcodeConfigs[],
+    DAJ?: string,
+    DDB?: string,
+  ): Promise<BarcodeConfigsFields> {
+    if (DAJ) {
+      const forState = options.filter((o) => o.state === DAJ);
+      if (forState.length) {
+        if (DDB) {
+          const exact = forState.find((o) => o.rev === DDB);
+          if (exact) return exact.fields;
+        }
+        const sorted = forState.sort((a, b) => b.rev.localeCompare(a.rev));
+        return sorted[0].fields;
+      }
+    }
+
+    // 2) if only rev provided
+    if (DDB) {
+      const byRev = options.find((o) => o.rev === DDB);
+      if (byRev) return byRev.fields;
+    }
+
+    // 3) last‐resort fallback
+    return options[0].fields;
+  }
 }
