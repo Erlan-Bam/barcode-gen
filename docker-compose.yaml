@@ -36,7 +36,9 @@ services:
       - '3000:3000'
     environment:
       REDIS_URL: 'redis://redis:6379'
-      KAFKA_BROKER: 'PLAINTEXT://kafka:9092'
+      KAFKA_BROKERS: 'kafka:9092'
+      KAFKA_CLIENT_ID: 'barcodegen'
+      KAFKA_ENABLED: 'true'
 
 volumes:
   redis_data:
