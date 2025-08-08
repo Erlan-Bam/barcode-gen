@@ -41,7 +41,19 @@ export class BarcodeController {
   }
 
   @Post('random')
-  async getRandom(data: GetRandomDto) {
+  @ApiOperation({
+    summary: 'Generate random DL-related data',
+    description:
+      'Принимает { input, output }. output должен быть одним из поддерживаемых наборов: ' +
+      '["DAG","DAI","DAK"] | ["DAC","DAD","DCS"] | ["DBB"] | ["DAQ"] | ["DBD","DBA"] | ["DCJ"]. ' +
+      'Возвращает объект с человекочитаемыми ключами (по fN) и строковыми значениями.',
+  })
+  @ApiBody({
+    description:
+      'Input params (state, gender, etc.) and which dataset to generate',
+    type: GetRandomDto,
+  })
+  async getRandom(@Body() data: GetRandomDto) {
     return this.barcodeService.getRandom(data);
   }
 }

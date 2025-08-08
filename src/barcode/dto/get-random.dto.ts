@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
+  IsDefined,
   IsNotEmptyObject,
   IsObject,
   IsString,
@@ -41,25 +42,62 @@ export class GetRandomDto {
     additionalProperties: { oneOf: [{ type: 'string' }, { type: 'number' }] },
     example: { DAJ: 'NY', DBC: 1 },
   })
+  @IsDefined()
   @IsObject()
   @IsNotEmptyObject()
   input!: Record<string, string | number>;
 
   @ApiProperty({
-    description:
-      'Какой набор данных сгенерировать (строгие наборы, порядок важен — совпадает с реализацией)',
-    type: [String],
-    examples: [
-      ['DBB'],
-      ['DAQ'],
-      ['DBD', 'DBA'],
-      ['DAC', 'DAD', 'DCS'],
-      ['DAG', 'DAI', 'DAK'],
-      ['DCJ'],
+    required: true,
+    description: 'Строго допустимые наборы; порядок важен',
+    oneOf: [
+      {
+        type: 'array',
+        items: { type: 'string', enum: ['DBB'] },
+        minItems: 1,
+        maxItems: 1,
+        example: ['DBB'],
+      },
+      {
+        type: 'array',
+        items: { type: 'string', enum: ['DAQ'] },
+        minItems: 1,
+        maxItems: 1,
+        example: ['DAQ'],
+      },
+      {
+        type: 'array',
+        items: { type: 'string', enum: ['DBD', 'DBA'] },
+        minItems: 2,
+        maxItems: 2,
+        example: ['DBD', 'DBA'],
+      },
+      {
+        type: 'array',
+        items: { type: 'string', enum: ['DAC', 'DAD', 'DCS'] },
+        minItems: 3,
+        maxItems: 3,
+        example: ['DAC', 'DAD', 'DCS'],
+      },
+      {
+        type: 'array',
+        items: { type: 'string', enum: ['DAG', 'DAI', 'DAK'] },
+        minItems: 3,
+        maxItems: 3,
+        example: ['DAG', 'DAI', 'DAK'],
+      },
+      {
+        type: 'array',
+        items: { type: 'string', enum: ['DCJ'] },
+        minItems: 1,
+        maxItems: 1,
+        example: ['DCJ'],
+      },
     ],
   })
   @IsArray()
   @IsString({ each: true })
   @Validate(OutputSetConstraint)
+  @IsDefined({ message: 'output is required' })
   output!: string[];
 }

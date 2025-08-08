@@ -42,6 +42,9 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       clientId: this.clientId,
       brokers: this.brokers,
       logLevel: logLevel.INFO,
+      retry: {
+        retries: 2,
+      },
     });
 
     this.producer = this.kafka.producer({ allowAutoTopicCreation: true });

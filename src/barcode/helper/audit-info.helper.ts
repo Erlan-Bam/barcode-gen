@@ -1,9 +1,9 @@
 import { fN } from 'src/shared/const/fields-names.const';
 import { getRandChar, getRandNum } from 'src/shared/helper/functions.helper';
 
-export const auditInfo = (
+export async function auditInfo(
   req: Record<string, string>,
-): Record<string, string> => {
+): Promise<Record<string, string>> {
   const result: Record<string, string> = {};
   const DAJ = req.DAJ as string;
   const DBD = req.DBD as string;
@@ -18,4 +18,4 @@ export const auditInfo = (
       break;
   }
   return result;
-};
+}
