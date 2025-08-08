@@ -13,6 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Sex {
+  M
+  F
+}
+
 model Barcode {
   id        String   @id @default(uuid())
   url       String
@@ -20,4 +25,20 @@ model Barcode {
   userId    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id String @id @default(uuid())
+  DAG String
+  DAI String
+  DAJ String
+  DAK String
+}
+
+model Names {
+  id String @id @default(uuid())
+  DAC String
+  DAD String
+  DCS String
+  DBC Sex
 }

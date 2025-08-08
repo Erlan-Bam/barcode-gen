@@ -14,6 +14,7 @@ import {
 } from 'src/barcode-config/dto/configs.dto';
 import { GetDataDto } from './dto/get-data.dto';
 import { BarcodeConfigService } from 'src/barcode-config/barcode-config.service';
+import { GetRandomDto } from './dto/get-random.dto';
 
 @ApiTags('barcodes')
 @Controller('barcodes')
@@ -36,6 +37,11 @@ export class BarcodeController {
   async getFields(
     @Body() data: GetDataDto,
   ): Promise<DLConfigFieldsToPresent | DLDownFields> {
-    return this.configService.getFields(data);
+    return await this.configService.getFields(data);
+  }
+
+  @Post('random')
+  async getRandom(data: GetRandomDto) {
+    return this.barcodeService.getRandom(data);
   }
 }

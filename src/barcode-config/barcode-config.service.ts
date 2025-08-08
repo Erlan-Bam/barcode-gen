@@ -5,6 +5,7 @@ import {
   BarcodeConfigsFields,
   BarcodeGenerateConfig,
   DLConfigFieldsToPresent,
+  DLDownFields,
   DocumentType,
 } from './dto/configs.dto';
 import {
@@ -17,7 +18,7 @@ import {
   under18,
   under19,
   under21,
-} from './helper/functions.helper';
+} from './helper/config.helper';
 import { calendar, icon, input, select } from 'src/shared/helper/fields.helper';
 import { fN } from 'src/shared/const/fields-names.const';
 import {
@@ -5414,7 +5415,9 @@ export class BarcodeConfigService {
     },
   ];
 
-  async getFields(data: GetDataDto) {
+  async getFields(
+    data: GetDataDto,
+  ): Promise<DLConfigFieldsToPresent | DLDownFields> {
     return new PresentFields(
       [data.country, data.DAJ, data.DDB, data.type, data.flag],
       this.configs,
