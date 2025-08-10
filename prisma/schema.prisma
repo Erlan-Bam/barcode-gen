@@ -18,9 +18,15 @@ enum Sex {
   F
 }
 
+enum BarcodeType {
+  PDF417
+  CODE128
+}
+
 model Barcode {
   id        String   @id @default(uuid())
   url       String
+  type      BarcodeType
   data      Json?
   userId    String?
   createdAt DateTime @default(now())

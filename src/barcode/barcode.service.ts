@@ -1,18 +1,31 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { BarcodeConfigService } from 'src/barcode-config/barcode-config.service';
 import { fN } from 'src/shared/const/fields-names.const';
 import { GetRandomDto } from './dto/get-random.dto';
-import { Sex } from '@prisma/client';
+import { Barcode, Sex } from '@prisma/client';
 import { GetCalculateDto } from './dto/get-calculate.dto';
+import { GeneratePDF417Dto } from './dto/generate-pdf417.dto';
+import * as util from 'util';
+import { execFile } from 'child_process';
+import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class BarcodeService {
+  private readonly BARCODE_URL: string = '';
+  private readonly logger = new Logger(BarcodeService.name);
   constructor(
     private prisma: PrismaService,
     private configService: BarcodeConfigService,
-  ) {}
+  ) {
+    const backendUrl = process.env.BACKEND_URL;
+    if (!backendUrl) {
+      throw new Error('BACKEND_URL environment variable is not set');
+    }
+    this.BARCODE_URL = `${backendUrl}/uploads/barcodes`;
+  }
   async getRandom(data: GetRandomDto): Promise<Record<string, string>> {
     try {
       const operation = data.output.join(',');
@@ -161,7 +174,62 @@ export class BarcodeService {
       throw new HttpException('Internal server error in calculate', 500);
     }
   }
+  async generatePdf417(data: GeneratePDF417Dto): Promise<Barcode> {
+    try {
+      const config = await this.configService.findByStateAndRev(
+        data.values.DAJ,
+        data.values.DDB,
+      );
 
+      const values = Object.fromEntries(
+        Object.entries(data.values)
+          .filter(([, v]) => v !== undefined && v !== null)
+          .map(([k, v]) => [k, String(v)]),
+      ) as Record<string, string>;
+
+      const id = randomUUID();
+      const [payload, settings] = config.generate(values);
+      const execFileAsync = util.promisify(execFile);
+      await execFileAsync(
+        'python3',
+        [
+          `${path.join(process.cwd(), 'barcode.py')}`,
+          payload
+            .replaceAll('\n', '␊')
+            .replaceAll('\r', '␍')
+            .replaceAll('\x1e', '␞'),
+          Object.entries(settings)
+            .map(([k, v]) => `${k}=${v}`)
+            .join('|'),
+          id,
+        ],
+        {
+          shell: false,
+          windowsHide: true,
+          maxBuffer: 10 * 1024 * 1024,
+          cwd: process.cwd(),
+        },
+      );
+
+      const barcode = await this.prisma.barcode.create({
+        data: {
+          id: id,
+          url: `${this.BARCODE_URL}/${id}.png`,
+          type: 'PDF417',
+          data: JSON.stringify(settings),
+          userId: data.userId ?? null,
+        },
+      });
+
+      return barcode;
+    } catch (error) {
+      this.logger.error('Error generating PDF417 barcode', error);
+      throw new HttpException(
+        'Internal server error in PDF417 generation',
+        500,
+      );
+    }
+  }
   async getRandomAddressByState(
     state: string,
   ): Promise<{ DAG: string; DAI: string; DAK: string }> {

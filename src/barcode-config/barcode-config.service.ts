@@ -5423,4 +5423,15 @@ export class BarcodeConfigService {
       this.configs,
     ).getData();
   }
+
+  async findByStateAndRev(
+    state: string | undefined,
+    rev: string | undefined,
+  ): Promise<BarcodeConfigs> {
+    return (
+      this.configs.find(
+        (config) => config.state === state && config.rev === rev,
+      ) || this.configs[0]
+    );
+  }
 }
