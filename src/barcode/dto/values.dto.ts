@@ -134,6 +134,7 @@ export class ValuesDto {
   @IsString()
   @Matches(/^\d{1,3}$/)
   DAU?: string; // Height (cm as "NNN")
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -141,28 +142,40 @@ export class ValuesDto {
   DAW?: string; // Weight (lbs as "NNN")
 
   // Misc
-  @ApiPropertyOptional() @IsOptional() @IsInt() DDK?: number; // Veteran
-  @ApiPropertyOptional() @IsOptional() @IsInt() DDL?: number; // Donor
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  DDK?: number; // Veteran
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  DDL?: number; // Donor
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(25)
   DCK?: string; // Inv Number
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(20)
   DCL?: string; // Race code
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(20)
   DDA?: string; // Compliance type
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   @MaxLength(3)
   QQQ?: string; // Doc type
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

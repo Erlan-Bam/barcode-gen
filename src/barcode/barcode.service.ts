@@ -4,7 +4,7 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 import { BarcodeConfigService } from 'src/barcode-config/barcode-config.service';
 import { fN } from 'src/shared/const/fields-names.const';
 import { GetRandomDto } from './dto/get-random.dto';
-import { Barcode, Sex } from '@prisma/client';
+import { Barcode, BarcodeType, Sex } from '@prisma/client';
 import { GetCalculateDto } from './dto/get-calculate.dto';
 import { GeneratePDF417Dto } from './dto/generate-pdf417.dto';
 import * as util from 'util';
@@ -215,7 +215,7 @@ export class BarcodeService {
         data: {
           id: id,
           url: `${this.BARCODE_URL}/${id}.png`,
-          type: 'PDF417',
+          type: BarcodeType.PDF417,
           data: JSON.stringify(settings),
           userId: data.userId ?? null,
         },
@@ -226,6 +226,39 @@ export class BarcodeService {
       this.logger.error('Error generating PDF417 barcode', error);
       throw new HttpException(
         'Internal server error in PDF417 generation',
+        500,
+      );
+    }
+  }
+  async generateCode128(inventory: string): Promise<Barcode> {
+    try {
+      const id = randomUUID();
+      const execFileAsync = util.promisify(execFile);
+      await execFileAsync(
+        'python3',
+        [`${path.join(process.cwd(), 'code-128.py')}`, inventory, id],
+        {
+          shell: false,
+          windowsHide: true,
+          maxBuffer: 10 * 1024 * 1024,
+          cwd: process.cwd(),
+        },
+      );
+
+      const barcode = await this.prisma.barcode.create({
+        data: {
+          id: id,
+          url: `${this.BARCODE_URL}/${id}.png`,
+          type: BarcodeType.CODE128,
+          data: JSON.stringify({ inventory: inventory }),
+        },
+      });
+
+      return barcode;
+    } catch (error) {
+      this.logger.error('Error generating CODE128 barcode', error);
+      throw new HttpException(
+        'Internal server error in CODE128 generation',
         500,
       );
     }

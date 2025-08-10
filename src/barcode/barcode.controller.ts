@@ -11,6 +11,7 @@ import { BarcodeConfigService } from 'src/barcode-config/barcode-config.service'
 import { GetRandomDto } from './dto/get-random.dto';
 import { GetCalculateDto } from './dto/get-calculate.dto';
 import { GeneratePDF417Dto } from './dto/generate-pdf417.dto';
+import { GenerateCode128Dto } from './dto/generate-code128.dto';
 
 @ApiTags('barcodes')
 @Controller('barcodes')
@@ -74,5 +75,10 @@ export class BarcodeController {
   @Post('pdf417')
   async generatePdf417(@Body() data: GeneratePDF417Dto) {
     return this.barcodeService.generatePdf417(data);
+  }
+
+  @Post('code128')
+  async generateCode128(@Body() data: GenerateCode128Dto) {
+    return this.barcodeService.generateCode128(data.value);
   }
 }
