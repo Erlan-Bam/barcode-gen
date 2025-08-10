@@ -24,8 +24,5 @@ export class GeneratePDF417Dto {
   @Type(() => ValuesDto)
   values!: ValuesDto;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  userId?: string;
+  userId!: string;
 }

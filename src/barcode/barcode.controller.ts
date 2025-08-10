@@ -1,6 +1,12 @@
 // src/barcode/barcode.controller.ts
 import { Controller, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBody,
+  ApiBearerAuth,
+  ApiBadRequestResponse,
+} from '@nestjs/swagger';
 import { BarcodeService } from './barcode.service';
 import {
   DLConfigFieldsToPresent,
@@ -73,12 +79,60 @@ export class BarcodeController {
   }
 
   @Post('pdf417')
+  @ApiOperation({
+    summary: 'Сгенерировать PDF417 (PNG сохраняются в /uploads/barcodes)',
+  })
+  @ApiBody({
+    type: GeneratePDF417Dto,
+    examples: {
+      basic: {
+        value: {
+          values: {
+            DAJ: 'AR',
+            DDB: '03012018',
+            DCS: 'AVERBACH',
+            DAC: 'JUNIOR',
+            DAD: 'MAURICE',
+            DBB: '07191994',
+            DBD: '04162023',
+            DBA: '08182031',
+            DBC: 1,
+            DAG: '49 ROLLINGBROOK',
+            DAI: 'GREENBRIAR',
+            DAK: '72958',
+            DAQ: '973101496',
+            DCF: '7279004467 0601',
+            DAU: '012',
+            DAY: 'BRO',
+            DDL: 1,
+            DDK: 1,
+            QQQ: 'DL',
+          },
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Неверные данные (валидация DTO)',
+  })
   async generatePdf417(@Body() data: GeneratePDF417Dto) {
     return this.barcodeService.generatePdf417(data);
   }
 
   @Post('code128')
+  @ApiOperation({
+    summary: 'Сгенерировать Code 128 (PNG сохраняется в /uploads/barcodes)',
+  })
+  @ApiBody({
+    type: GenerateCode128Dto,
+    examples: {
+      basic: {
+        value: { value: 'INV-000123' },
+      },
+    },
+  })
+  @ApiBadRequestResponse({ description: 'Неверные данные (валидация DTO)' })
   async generateCode128(@Body() data: GenerateCode128Dto) {
-    return this.barcodeService.generateCode128(data.value);
+    return this.barcodeService.generateCode128(data);
   }
 }

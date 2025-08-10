@@ -11,6 +11,7 @@ import * as util from 'util';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
+import { GenerateCode128Dto } from './dto/generate-code128.dto';
 
 @Injectable()
 export class BarcodeService {
@@ -217,7 +218,7 @@ export class BarcodeService {
           url: `${this.BARCODE_URL}/${id}.png`,
           type: BarcodeType.PDF417,
           data: JSON.stringify(settings),
-          userId: data.userId ?? null,
+          userId: data.userId,
         },
       });
 
@@ -230,13 +231,13 @@ export class BarcodeService {
       );
     }
   }
-  async generateCode128(inventory: string): Promise<Barcode> {
+  async generateCode128(data: GenerateCode128Dto): Promise<Barcode> {
     try {
       const id = randomUUID();
       const execFileAsync = util.promisify(execFile);
       await execFileAsync(
         'python3',
-        [`${path.join(process.cwd(), 'code-128.py')}`, inventory, id],
+        [`${path.join(process.cwd(), 'code-128.py')}`, data.value, id],
         {
           shell: false,
           windowsHide: true,
@@ -250,7 +251,8 @@ export class BarcodeService {
           id: id,
           url: `${this.BARCODE_URL}/${id}.png`,
           type: BarcodeType.CODE128,
-          data: JSON.stringify({ inventory: inventory }),
+          data: JSON.stringify({ inventory: data.value }),
+          userId: data.userId,
         },
       });
 
