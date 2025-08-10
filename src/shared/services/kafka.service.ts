@@ -72,5 +72,15 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async checkHealth() {
+    if (!this.enabled) {
+      throw new Error('Kafka is disabled by env (KAFKA_ENABLED=false)');
+    }
+    if (!this.connected) {
+      throw new Error('Kafka producer is not connected');
+    }
+    return 'Kafka is healthy';
+  }
+
   async publishBarcode() {}
 }

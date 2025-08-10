@@ -1,6 +1,6 @@
 // src/barcode/barcode.controller.ts
 import { Controller, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { BarcodeService } from './barcode.service';
 import {
   DLConfigFieldsToPresent,
@@ -13,6 +13,7 @@ import { GetCalculateDto } from './dto/get-calculate.dto';
 
 @ApiTags('barcodes')
 @Controller('barcodes')
+// @ApiBearerAuth('JWT')
 export class BarcodeController {
   constructor(
     private barcodeService: BarcodeService,
