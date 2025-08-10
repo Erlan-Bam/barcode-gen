@@ -1,12 +1,6 @@
 // src/barcode/barcode.controller.ts
 import { Controller, Post, Body } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiBody,
-  ApiOkResponse,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { BarcodeService } from './barcode.service';
 import {
   DLConfigFieldsToPresent,
@@ -15,6 +9,7 @@ import {
 import { GetDataDto } from './dto/get-data.dto';
 import { BarcodeConfigService } from 'src/barcode-config/barcode-config.service';
 import { GetRandomDto } from './dto/get-random.dto';
+import { GetCalculateDto } from './dto/get-calculate.dto';
 
 @ApiTags('barcodes')
 @Controller('barcodes')
@@ -42,7 +37,8 @@ export class BarcodeController {
 
   @Post('random')
   @ApiOperation({
-    summary: 'Generate random DL-related data',
+    summary:
+      'Если у поля на странице есть random и randomHandler, то можно обращаться к этому url. Для составления объекта запроса, нужно взять все элементы из ключа randomHandler, получить их значения со страницы и положить в объект req запроса, где ключи это аббревиатуры полей, а значения - значения полей. В массив res нужно положить элементы из значения randomHandler.',
     description:
       'Принимает { input, output }. output должен быть одним из поддерживаемых наборов: ' +
       '["DAG","DAI","DAK"] | ["DAC","DAD","DCS"] | ["DBB"] | ["DAQ"] | ["DBD","DBA"] | ["DCJ"]. ' +
@@ -56,4 +52,25 @@ export class BarcodeController {
   async getRandom(@Body() data: GetRandomDto) {
     return this.barcodeService.getRandom(data);
   }
+
+  @Post('calculate')
+  @ApiOperation({
+    summary:
+      'Если у поля на странице есть calculate и calculateHandler, то можно обращаться к этому url. Для составления объекта запроса, нужно взять все элементы из ключа calculateHandler, получить их значения со страницы и положить в объект input запроса, где ключи это аббревиатуры полей, а значения - значения полей. В массив res нужно положить элементы из значения calculateHandler.',
+    description:
+      'Принимает { input, output }. Поддерживаемые операции: ' +
+      '["DBA"] (expiration date), ["DCK"] (inventory number), ["DCF"] (DD number).',
+  })
+  @ApiBody({
+    type: GetCalculateDto,
+    description: 'Input data and expected output to calculate',
+  })
+  async getCalculate(@Body() data: GetCalculateDto) {
+    return this.barcodeService.getCalculate(data);
+  }
+
+  // @Post('pdf417')
+  // async getPdf417(@Body() data: GetDataDto) {
+  //   return this.barcodeService.getPdf417(data);
+  // }
 }

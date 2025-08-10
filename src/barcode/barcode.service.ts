@@ -5,6 +5,7 @@ import { BarcodeConfigService } from 'src/barcode-config/barcode-config.service'
 import { fN } from 'src/shared/const/fields-names.const';
 import { GetRandomDto } from './dto/get-random.dto';
 import { Sex } from '@prisma/client';
+import { GetCalculateDto } from './dto/get-calculate.dto';
 
 @Injectable()
 export class BarcodeService {
@@ -108,6 +109,56 @@ export class BarcodeService {
         'Internal server error in getting random data',
         500,
       );
+    }
+  }
+  async getCalculate(data: GetCalculateDto): Promise<Record<string, string>> {
+    try {
+      const operation = data.output.join(',');
+
+      if (operation === 'DBA') {
+        const { DBD } = data.input as Record<string, string>;
+        if (!DBD) {
+          throw new HttpException('DBD are required for DBA', 400);
+        }
+
+        const { dlExpirationDateCalculation } = await import(
+          './helper/dl-expiration-date-calculation.helper'
+        );
+        return await dlExpirationDateCalculation(data.input);
+      }
+
+      if (operation === 'DCK') {
+        const { DBD, DAQ, DBA, DBB } = data.input as Record<string, string>;
+        if (
+          !DBD ||
+          typeof DBD !== 'string' ||
+          !DAQ ||
+          typeof DAQ !== 'string' ||
+          !DBA ||
+          typeof DBA !== 'string' ||
+          !DBB ||
+          typeof DBB !== 'string'
+        ) {
+          throw new HttpException(
+            'DBD, DAQ, DBA, DBB are required for DCK and must be strings',
+            400,
+          );
+        }
+
+        const { getInventoryNumber } = await import(
+          './helper/get-inventory-number.dto'
+        );
+        return await getInventoryNumber(data.input as Record<string, string>);
+      }
+      if (operation === 'DCF') {
+        const { getDDNumber } = await import('./helper/get-dd-number.helper');
+        return await getDDNumber(data.input as Record<string, string>);
+      }
+
+      throw new HttpException(`Unsupported operation: ${operation}`, 400);
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException('Internal server error in calculate', 500);
     }
   }
 
