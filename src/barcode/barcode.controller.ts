@@ -7,6 +7,8 @@ import {
   Patch,
   Param,
   ParseUUIDPipe,
+  Req,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,14 +30,18 @@ import { GeneratePDF417Dto } from './dto/generate-pdf417.dto';
 import { GenerateCode128Dto } from './dto/generate-code128.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { EditBarcodeDto } from './dto/edit-barcode.dto';
+import { KafkaService } from 'src/shared/services/kafka.service';
+import { User } from 'src/shared/decorator/user.decorator';
 
 @ApiTags('barcodes')
 @Controller('barcodes')
 @ApiBearerAuth('JWT')
 @UseGuards(AuthGuard('jwt'))
 export class BarcodeController {
+  private readonly logger = new Logger(BarcodeController.name);
   constructor(
     private barcodeService: BarcodeService,
+    private kafkaService: KafkaService,
     private configService: BarcodeConfigService,
   ) {}
 
@@ -126,8 +132,18 @@ export class BarcodeController {
   @ApiBadRequestResponse({
     description: 'Неверные данные (валидация DTO)',
   })
-  async generatePdf417(@Body() data: GeneratePDF417Dto) {
-    return this.barcodeService.generatePdf417(data);
+  async generatePdf417(
+    @Body() data: GeneratePDF417Dto,
+    @User('id') userId: string,
+  ) {
+    data.userId = userId;
+    const barcode = await this.barcodeService.generatePdf417(data);
+    try {
+      await this.kafkaService.sendBarcodeGenerated(barcode);
+    } catch (error) {
+      this.logger.error('Kafka error in /api/barcodes/pdf417:', error);
+    }
+    return barcode;
   }
 
   @Post('code128')
@@ -143,15 +159,34 @@ export class BarcodeController {
     },
   })
   @ApiBadRequestResponse({ description: 'Неверные данные (валидация DTO)' })
-  async generateCode128(@Body() data: GenerateCode128Dto) {
-    return this.barcodeService.generateCode128(data);
+  async generateCode128(
+    @Body() data: GenerateCode128Dto,
+    @User('id') userId: string,
+  ) {
+    data.userId = userId;
+    const barcode = await this.barcodeService.generateCode128(data);
+
+    try {
+      await this.kafkaService.sendBarcodeGenerated(barcode);
+    } catch (error) {
+      this.logger.error('Kafka error in /api/barcodes/code128:', error);
+    }
+    return barcode;
   }
 
   @Patch(':id/edit')
   async editBarcode(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() data: EditBarcodeDto,
+    @User('id') userId: string,
   ) {
-    return this.barcodeService.editBarcode(id, data);
+    data.userId = userId;
+    const barcode = await this.barcodeService.editBarcode(id, data);
+    try {
+      await this.kafkaService.sendBarcodeEdited(barcode);
+    } catch (error) {
+      this.logger.error('Kafka error in /api/barcodes/:id/edit:', error);
+    }
+    return barcode;
   }
 }
