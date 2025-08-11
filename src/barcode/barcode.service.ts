@@ -12,6 +12,8 @@ import { execFile } from 'child_process';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { GenerateCode128Dto } from './dto/generate-code128.dto';
+import { EditBarcodeDto } from './dto/edit-barcode.dto';
+import { BarcodeGenerateConfig } from 'src/barcode-config/dto/configs.dto';
 
 @Injectable()
 export class BarcodeService {
@@ -190,34 +192,15 @@ export class BarcodeService {
 
       const id = randomUUID();
       const [payload, settings] = config.generate(values);
-      const execFileAsync = util.promisify(execFile);
-      await execFileAsync(
-        'python3',
-        [
-          `${path.join(process.cwd(), 'barcode.py')}`,
-          payload
-            .replaceAll('\n', '␊')
-            .replaceAll('\r', '␍')
-            .replaceAll('\x1e', '␞'),
-          Object.entries(settings)
-            .map(([k, v]) => `${k}=${v}`)
-            .join('|'),
-          id,
-        ],
-        {
-          shell: false,
-          windowsHide: true,
-          maxBuffer: 10 * 1024 * 1024,
-          cwd: process.cwd(),
-        },
-      );
+
+      await this.runPdf417(id, payload, settings);
 
       const barcode = await this.prisma.barcode.create({
         data: {
           id: id,
           url: `${this.BARCODE_URL}/${id}.png`,
           type: BarcodeType.PDF417,
-          data: JSON.stringify(settings),
+          data: JSON.stringify(values),
           userId: data.userId,
         },
       });
@@ -234,17 +217,7 @@ export class BarcodeService {
   async generateCode128(data: GenerateCode128Dto): Promise<Barcode> {
     try {
       const id = randomUUID();
-      const execFileAsync = util.promisify(execFile);
-      await execFileAsync(
-        'python3',
-        [`${path.join(process.cwd(), 'code-128.py')}`, data.value, id],
-        {
-          shell: false,
-          windowsHide: true,
-          maxBuffer: 10 * 1024 * 1024,
-          cwd: process.cwd(),
-        },
-      );
+      await this.runCode128(id, data.value);
 
       const barcode = await this.prisma.barcode.create({
         data: {
@@ -261,6 +234,115 @@ export class BarcodeService {
       this.logger.error('Error generating CODE128 barcode', error);
       throw new HttpException(
         'Internal server error in CODE128 generation',
+        500,
+      );
+    }
+  }
+  async runPdf417(
+    id: string,
+    payload: string,
+    settings: BarcodeGenerateConfig,
+  ): Promise<void> {
+    const execFileAsync = util.promisify(execFile);
+    await execFileAsync(
+      'python3',
+      [
+        `${path.join(process.cwd(), 'barcode.py')}`,
+        payload
+          .replaceAll('\n', '␊')
+          .replaceAll('\r', '␍')
+          .replaceAll('\x1e', '␞'),
+        Object.entries(settings)
+          .map(([k, v]) => `${k}=${v}`)
+          .join('|'),
+        id,
+      ],
+      {
+        shell: false,
+        windowsHide: true,
+        maxBuffer: 10 * 1024 * 1024,
+        cwd: process.cwd(),
+      },
+    );
+  }
+  async runCode128(id: string, value: string): Promise<void> {
+    const execFileAsync = util.promisify(execFile);
+    await execFileAsync(
+      'python3',
+      [`${path.join(process.cwd(), 'code-128.py')}`, value, id],
+      {
+        shell: false,
+        windowsHide: true,
+        maxBuffer: 10 * 1024 * 1024,
+        cwd: process.cwd(),
+      },
+    );
+  }
+  async editBarcode(id: string, data: EditBarcodeDto): Promise<Barcode> {
+    try {
+      const instance = await this.prisma.barcode.findUnique({
+        where: { id: id },
+      });
+      if (!instance) {
+        throw new HttpException(`Barcode with id ${id} not found`, 404);
+      }
+      if (instance.userId !== data.userId) {
+        throw new HttpException(
+          `You are not allowed to edit this barcode`,
+          403,
+        );
+      }
+      const newId = randomUUID();
+      if (data.type === BarcodeType.PDF417) {
+        const config = await this.configService.findByStateAndRev(
+          data.values?.DAJ,
+          data.values?.DDB,
+        );
+
+        const values = Object.fromEntries(
+          Object.entries(data.values)
+            .filter(([, v]) => v !== undefined && v !== null)
+            .map(([k, v]) => [k, String(v)]),
+        ) as Record<string, string>;
+
+        const [payload, settings] = config.generate(values);
+
+        await this.runPdf417(id, payload, settings);
+
+        const barcode = await this.prisma.barcode.update({
+          where: { id: id },
+          data: {
+            url: `${this.BARCODE_URL}/${newId}.png`,
+            data: JSON.stringify(values),
+            userId: data.userId,
+          },
+        });
+        return barcode;
+      } else {
+        if (!data.values.DCK) {
+          throw new HttpException('DCK is required for CODE128', 400);
+        }
+        await this.runCode128(newId, data.values.DCK);
+
+        const barcode = await this.prisma.barcode.update({
+          where: { id: id },
+          data: {
+            id: newId,
+            url: `${this.BARCODE_URL}/${newId}.png`,
+            type: BarcodeType.CODE128,
+            data: JSON.stringify({ inventory: data.values.DCK }),
+            userId: data.userId,
+          },
+        });
+        return barcode;
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error(`Error editing barcode with id ${id}`, error);
+      throw new HttpException(
+        `Internal server error in editing barcode with id ${id}`,
         500,
       );
     }

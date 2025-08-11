@@ -1,5 +1,13 @@
 // src/barcode/barcode.controller.ts
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Patch,
+  Param,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -18,10 +26,13 @@ import { GetRandomDto } from './dto/get-random.dto';
 import { GetCalculateDto } from './dto/get-calculate.dto';
 import { GeneratePDF417Dto } from './dto/generate-pdf417.dto';
 import { GenerateCode128Dto } from './dto/generate-code128.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { EditBarcodeDto } from './dto/edit-barcode.dto';
 
 @ApiTags('barcodes')
 @Controller('barcodes')
-// @ApiBearerAuth('JWT')
+@ApiBearerAuth('JWT')
+@UseGuards(AuthGuard('jwt'))
 export class BarcodeController {
   constructor(
     private barcodeService: BarcodeService,
@@ -134,5 +145,13 @@ export class BarcodeController {
   @ApiBadRequestResponse({ description: 'Неверные данные (валидация DTO)' })
   async generateCode128(@Body() data: GenerateCode128Dto) {
     return this.barcodeService.generateCode128(data);
+  }
+
+  @Patch(':id/edit')
+  async editBarcode(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() data: EditBarcodeDto,
+  ) {
+    return this.barcodeService.editBarcode(id, data);
   }
 }

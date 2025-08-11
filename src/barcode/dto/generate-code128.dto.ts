@@ -1,6 +1,5 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, MaxLength } from 'class-validator';
-import { ValuesDto } from './values.dto';
 
 export class GenerateCode128Dto {
   @ApiProperty()
