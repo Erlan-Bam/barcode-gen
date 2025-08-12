@@ -29,6 +29,7 @@ model Barcode {
   type      BarcodeType
   data      Json?
   userId    String
+  editFlag  Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

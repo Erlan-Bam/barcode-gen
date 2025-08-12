@@ -292,6 +292,9 @@ export class BarcodeService {
           403,
         );
       }
+      if (instance.editFlag) {
+        throw new HttpException(`Barcode can be edited only once`, 400);
+      }
       const newId = randomUUID();
       if (data.type === BarcodeType.PDF417) {
         const config = await this.configService.findByStateAndRev(
@@ -332,6 +335,7 @@ export class BarcodeService {
             type: BarcodeType.CODE128,
             data: JSON.stringify({ inventory: data.values.DCK }),
             userId: data.userId,
+            editFlag: true,
           },
         });
         return barcode;
