@@ -10,4 +10,6 @@ export class GenerateCode128Dto {
 
   @IsOptional()
   userId!: string;
+
+  token!: string;
 }

@@ -14,6 +14,7 @@ import { randomUUID } from 'crypto';
 import { GenerateCode128Dto } from './dto/generate-code128.dto';
 import { EditBarcodeDto } from './dto/edit-barcode.dto';
 import { BarcodeGenerateConfig } from 'src/barcode-config/dto/configs.dto';
+import { BillingService } from 'src/shared/services/billing.service';
 
 @Injectable()
 export class BarcodeService {
@@ -22,6 +23,7 @@ export class BarcodeService {
   constructor(
     private prisma: PrismaService,
     private configService: BarcodeConfigService,
+    private billingService: BillingService,
   ) {
     const backendUrl = process.env.BACKEND_URL;
     if (!backendUrl) {
@@ -179,6 +181,10 @@ export class BarcodeService {
   }
   async generatePdf417(data: GeneratePDF417Dto): Promise<Barcode> {
     try {
+      const canBuy = await this.billingService.canBuy(data.token);
+      if (!canBuy) {
+        throw new HttpException('Insufficient credits', 400);
+      }
       const config = await this.configService.findByStateAndRev(
         data.values.DAJ,
         data.values.DDB,
@@ -216,6 +222,10 @@ export class BarcodeService {
   }
   async generateCode128(data: GenerateCode128Dto): Promise<Barcode> {
     try {
+      const canBuy = await this.billingService.canBuy(data.token);
+      if (!canBuy) {
+        throw new HttpException('Insufficient credits', 400);
+      }
       const id = randomUUID();
       await this.runCode128(id, data.value);
 

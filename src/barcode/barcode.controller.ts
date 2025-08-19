@@ -7,7 +7,7 @@ import {
   Patch,
   Param,
   ParseUUIDPipe,
-  Req,
+  Headers,
   Logger,
 } from '@nestjs/common';
 import {
@@ -135,8 +135,10 @@ export class BarcodeController {
   async generatePdf417(
     @Body() data: GeneratePDF417Dto,
     @User('id') userId: string,
+    @Headers('Authorization') auth: string,
   ) {
     data.userId = userId;
+    data.token = auth?.split(' ')[1];
     const barcode = await this.barcodeService.generatePdf417(data);
     try {
       await this.kafkaService.sendBarcodeGenerated(barcode);
@@ -162,8 +164,10 @@ export class BarcodeController {
   async generateCode128(
     @Body() data: GenerateCode128Dto,
     @User('id') userId: string,
+    @Headers('Authorization') auth: string,
   ) {
     data.userId = userId;
+    data.token = auth?.split(' ')[1];
     const barcode = await this.barcodeService.generateCode128(data);
 
     try {

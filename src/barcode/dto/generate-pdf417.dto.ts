@@ -15,4 +15,6 @@ export class GeneratePDF417Dto {
   values!: ValuesDto;
 
   userId!: string;
+
+  token!: string;
 }
